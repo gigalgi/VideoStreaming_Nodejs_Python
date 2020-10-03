@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Emitir Video</title>
+		<meta charset="utf-8">	
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+
+	<body>
+
+		<video id="video" style="display:none;" autoplay="true"></video>
+		<p id="logger"></p>
+		<canvas id="preview"></canvas>
+
+		<script type="text/javascript">
+			//canvas para poner las imagenes y reproducir el video
+			var canvas = document.getElementById("preview");
+			var context = canvas.getContext("2d");
+
+			//parametros del tamano
+			canvas.width = 600;
+			canvas.height = 440;
+
+			context.width = canvas.width;
+			context.height = canvas.height;
+			//variable para naipular el video 
+			var video = document.getElementById("video");
+			//iniciamos la liberia socketio
+			var socket = io();
+			//mostrar mensajes en pantalla
+			function logger(msg)
+			{
+				var paragraph = document.getElementById("logger");
+				var text = document.createTextNode(msg);
+				paragraph.appendChild(text);
+			}
+			//se cargar la camara
+			function loadCam(stream)
+			{
+				
+				video.srcObject = stream;
+				logger('Camara cargada correctamente');
+			}
+			//mensaje de error si no abre la camara
+			function loadFail()
+			{
+				
+				logger('Camara no conectada, ¡por favor revise su Cámara!');
+			}
+
+			//se dibuja la imagen obtenida y se envia al clinete que hace la peticion
+			function viewVideo(video,context)
+			{
+				context.drawImage(video,0,0,context.width,context.height);
+				//la imagen obtebida se envia codificada en base 64 con la cabecera data:image/jpeg;base64
+				socket.emit('stream',canvas.toDataURL('image/jpeg',0.5));
+			}
+
+			//se realisa la busqueda del dispitivo multimedia antes que todo
+			(function(){
+
+				navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msgGetUserMedia);
+				if(navigator.getUserMedia)
+				{
+					//Que usaremos
+					navigator.getUserMedia({video : true},loadCam,loadFail);
+				}
+				//se ejecuta repetidamente el envio de imagenes a una tasa deseada en este caso 30 representa 30fps aprox, Para saber cuantas veces lo envia por segundo -> 1000 = 1seg
+				setInterval(function(){
+					viewVideo(video,context);
+				},30);
+			})();
+		</script>
+
+	</body>
+</html>

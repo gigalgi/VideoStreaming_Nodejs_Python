@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Visualizar Video</title>
+		<meta charset="utf-8">
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+
+	<body>
+
+		<img id="play" width="600" height="440" >
+		
+		<script>
+			//se inicia la libreia socketio
+			var socket = io();
+			//se esta al pendiente de una peticion y se imprime la imagen al recibirla en el contenedor de <img>
+			socket.on('stream',function(image){
+				var img = document.getElementById("play");
+				img.src = image;
+			});
+		</script>
+		
+	</body>
+</html>
